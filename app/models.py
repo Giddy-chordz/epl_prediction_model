@@ -11,5 +11,5 @@ class Match(Base):
 
     FTHG = Column(Integer, nullable = False)
     FTAG = Column(Integer, nullable = False)
-    
-    UtcDate = Column(DateTime, nullable = False)
+
+    UtcDate = Column(String, nullable = False)
