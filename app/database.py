@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from .config import DATABASE_URL
+from config import DATABASE_URL
 
 Base = declarative_base()
 
@@ -21,7 +21,3 @@ def get_db():
 
 print(SQLALCHEMY_DATABASE_URL)
 
-import psycopg2
-
-conn = psycopg2.connect(SQLALCHEMY_DATABASE_URL)
-print("Connected!")
