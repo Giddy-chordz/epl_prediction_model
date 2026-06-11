@@ -1,7 +1,7 @@
 import requests
-from app.database import SessionLocal
-from app.data_ingestion import data_ingestion
-from app.config import API_TOKEN
+from database import SessionLocal
+from data_ingestion import data_ingestion
+from config import API_TOKEN
 
 url = "https://api.football-data.org/v4/competitions/PL/matches"
 
