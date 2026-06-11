@@ -8,7 +8,6 @@ from app.database import SessionLocal
 from app.data_ingestion import data_ingestion
 
 db = SessionLocal()
-
 data_ingestion(matches, db)
 
 print("DONE")

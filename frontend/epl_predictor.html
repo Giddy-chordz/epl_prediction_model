@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EPL Insight Dashboard</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#1E3A8A;--blue-light:#EFF4FF;--blue-mid:#3B5DB8;
+  --green:#16A34A;--red:#DC2626;
+  --bg:#F9FAFB;--surface:#ffffff;--surface2:#F3F4F6;
+  --border:#E5E7EB;--border2:#D1D5DB;
+  --text:#111827;--text2:#374151;--text3:#6B7280;
+  --header-bg:#1E3A8A;
+  --verdict-home-bg:#EFF4FF;--verdict-home-border:#BFCFEE;
+  --verdict-draw-bg:#FFFBEB;--verdict-draw-border:#FDE68A;
+  --verdict-away-bg:#FFF1F2;--verdict-away-border:#FECDD3;
+  --skeleton:#E5E7EB;
+  --shadow:0 1px 3px rgba(0,0,0,0.08);
+  --ucl-bg:#EFF4FF;--rel-bg:#FFF5F5;
+  --fixture-hover:#F8FAFF;--fixture-sel:#EFF4FF;
+  --select-bg:#ffffff;
+}
+[data-theme="dark"]{
+  --blue:#4F7FD4;--blue-light:#1e2d4a;
+  --green:#22C55E;--red:#F87171;
+  --bg:#0F1117;--surface:#1A1D27;--surface2:#22263A;
+  --border:#2E3347;--border2:#3A3F5C;
+  --text:#F1F5F9;--text2:#CBD5E1;--text3:#64748B;
+  --header-bg:#0D1B3E;
+  --verdict-home-bg:#1e2d4a;--verdict-home-border:#2E4A7A;
+  --verdict-draw-bg:#2A2210;--verdict-draw-border:#6B4F10;
+  --verdict-away-bg:#2A1010;--verdict-away-border:#7A2020;
+  --skeleton:#2E3347;
+  --shadow:0 1px 4px rgba(0,0,0,0.4);
+  --ucl-bg:#1A2340;--rel-bg:#2A1010;
+  --fixture-hover:#1E2235;--fixture-sel:#1e2d4a;
+  --select-bg:#22263A;
+}
+body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;transition:background 0.2s,color 0.2s}
+
+/* HEADER */
+header{background:var(--header-bg);padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100;transition:background 0.2s}
+.logo{color:#fff;font-size:17px;font-weight:700;letter-spacing:-0.3px;display:flex;align-items:center;gap:8px}
+.logo-badge{background:#fff;color:#1E3A8A;font-size:10px;font-weight:800;padding:2px 6px;border-radius:4px;letter-spacing:0.5px}
+[data-theme="dark"] .logo-badge{background:#4F7FD4;color:#fff}
+nav{display:flex;gap:4px;align-items:center}
+.nav-btn{background:none;border:none;color:rgba(255,255,255,0.65);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:500;transition:all 0.15s}
+.nav-btn:hover{background:rgba(255,255,255,0.12);color:#fff}
+.season-tag{color:rgba(255,255,255,0.5);font-size:12px}
+.theme-toggle{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.18);color:#fff;border-radius:20px;padding:5px 12px;cursor:pointer;font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px;transition:all 0.15s;white-space:nowrap}
+.theme-toggle:hover{background:rgba(255,255,255,0.2)}
+
+/* LAYOUT */
+.dashboard{display:grid;grid-template-columns:1fr 1.1fr 1fr;gap:16px;padding:20px;max-width:1280px;margin:0 auto}
+@media(max-width:1024px){.dashboard{grid-template-columns:1fr 1fr}}
+@media(max-width:680px){.dashboard{grid-template-columns:1fr}}
+
+/* PANELS */
+.panel{background:var(--surface);border-radius:10px;border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;transition:background 0.2s,border-color 0.2s}
+.panel-header{padding:14px 16px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.panel-title{font-size:13px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:0.6px}
+.panel-sub{font-size:12px;color:var(--text3)}
+
+/* FIXTURE CARDS */
+.fixture-card{padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.1s;display:flex;flex-direction:column;gap:4px}
+.fixture-card:last-child{border-bottom:none}
+.fixture-card:hover{background:var(--fixture-hover)}
+.fixture-card.selected{background:var(--fixture-sel);border-left:3px solid var(--blue)}
+.fixture-teams{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.team-name{font-size:13px;font-weight:600;color:var(--text);flex:1}
+.team-name.away{text-align:right}
+.vs-badge{font-size:11px;color:var(--text3);font-weight:600;padding:2px 8px;background:var(--surface2);border-radius:4px;white-space:nowrap}
+.fixture-meta{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text3)}
+.matchday-tag{background:var(--blue-light);color:var(--blue);font-size:10px;font-weight:700;padding:1px 6px;border-radius:3px}
+
+/* SKELETON */
+.loading-row{padding:10px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)}
+.skel{background:var(--skeleton);border-radius:4px;animation:pulse 1.4s ease-in-out infinite}
+.skel-text{height:12px}
+.skel-sm{width:60px}.skel-md{width:120px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* EMPTY */
+.empty-state{padding:28px 16px;text-align:center;color:var(--text3)}
+.empty-title{font-size:13px;font-weight:600;margin-bottom:4px;color:var(--text2)}
+.empty-sub{font-size:12px}
+
+/* TEST PREDICT SECTION */
+.test-predict-section{padding:14px 16px;border-bottom:1px solid var(--border);background:var(--surface2)}
+.test-predict-label{font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px}
+.select-row{display:flex;gap:8px;margin-bottom:10px}
+.team-select{flex:1;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;background:var(--select-bg);color:var(--text);font-size:12px;font-weight:500;appearance:none;cursor:pointer;outline:none;transition:border-color 0.15s}
+.team-select:focus{border-color:var(--blue)}
+.vs-divider{font-size:11px;color:var(--text3);font-weight:700;align-self:center;flex-shrink:0}
+.predict-btn{width:100%;padding:8px 16px;background:var(--blue);color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:opacity 0.15s}
+.predict-btn:hover{opacity:0.88}
+.predict-btn:disabled{opacity:0.5;cursor:not-allowed}
+
+/* IDLE STATE */
+.panel-idle{padding:40px 20px;text-align:center}
+.idle-icon{font-size:36px;margin-bottom:12px;opacity:0.2}
+.idle-title{font-size:14px;font-weight:600;color:var(--text2);margin-bottom:6px}
+.idle-sub{font-size:13px;color:var(--text3);line-height:1.5}
+
+/* PREDICTION RESULT */
+.pred-match-header{padding:16px 16px 12px;border-bottom:1px solid var(--border)}
+.pred-match-teams{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}
+.pred-team{font-size:14px;font-weight:700;color:var(--text);flex:1}
+.pred-team.away{text-align:right}
+.pred-vs{font-size:12px;color:var(--text3);font-weight:600}
+.pred-date{font-size:11px;color:var(--text3)}
+.verdict-card{margin:16px;border-radius:8px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between}
+.verdict-home{background:var(--verdict-home-bg);border:1px solid var(--verdict-home-border)}
+.verdict-draw{background:var(--verdict-draw-bg);border:1px solid var(--verdict-draw-border)}
+.verdict-away{background:var(--verdict-away-bg);border:1px solid var(--verdict-away-border)}
+.verdict-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;color:var(--text3)}
+.verdict-outcome{font-size:18px;font-weight:800;color:var(--text)}
+.verdict-conf-num{font-size:22px;font-weight:800}
+.verdict-home .verdict-conf-num{color:var(--blue)}
+.verdict-draw .verdict-conf-num{color:#D97706}
+[data-theme="dark"] .verdict-draw .verdict-conf-num{color:#FBBF24}
+.verdict-away .verdict-conf-num{color:var(--red)}
+.verdict-conf-label{font-size:11px;color:var(--text3)}
+.probs-section{padding:0 16px 16px}
+.prob-row{margin-bottom:10px}
+.prob-header{display:flex;justify-content:space-between;margin-bottom:4px}
+.prob-label{font-size:12px;font-weight:600;color:var(--text2)}
+.prob-pct{font-size:12px;font-weight:700;color:var(--text)}
+.prob-bar-bg{height:7px;background:var(--surface2);border-radius:4px;overflow:hidden;border:1px solid var(--border)}
+.prob-bar-fill{height:100%;border-radius:4px;transition:width 0.6s ease}
+.bar-home{background:var(--blue)}
+.bar-draw{background:#F59E0B}
+[data-theme="dark"] .bar-draw{background:#FBBF24}
+.bar-away{background:var(--red)}
+.disclaimer{margin:0 16px 16px;padding:8px 10px;background:var(--surface2);border-radius:6px;border:1px solid var(--border);font-size:11px;color:var(--text3);line-height:1.5}
+
+/* STANDINGS TABLE */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{padding:9px 10px;text-align:left;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;border-bottom:1px solid var(--border);background:var(--surface2)}
+th.num,td.num{text-align:center}
+td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text2);transition:background 0.1s}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--fixture-hover)}
+.pos{font-weight:700;color:var(--text)}
+.team-cell{font-weight:600;color:var(--text);font-size:12px}
+.pts{font-weight:800;color:var(--text);font-size:13px}
+tr.ucl td{background:var(--ucl-bg)}
+tr.rel td{background:var(--rel-bg)}
+.pos-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:1px}
+.dot-ucl{background:var(--blue)}.dot-uel{background:var(--green)}.dot-rel{background:var(--red)}
+.legend{display:flex;gap:12px;padding:10px 14px;border-top:1px solid var(--border);flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <span class="logo-badge">EPL</span>
+    Insight
+  </div>
+  <nav>
+    <button class="nav-btn" onclick="scrollTo(0,0)">Fixtures</button>
+    <button class="nav-btn" onclick="document.getElementById('standings-panel').scrollIntoView({behavior:'smooth'})">Table</button>
+    <button class="nav-btn" onclick="document.getElementById('pred-panel').scrollIntoView({behavior:'smooth'})">Analysis</button>
+    <button class="theme-toggle" id="theme-btn" onclick="toggleTheme()">
+      <span id="theme-icon">🌙</span>
+      <span id="theme-label">Dark</span>
+    </button>
+  </nav>
+</header>
+
+<div class="dashboard">
+
+  <!-- COL 1: FIXTURES -->
+  <div class="panel" id="fixtures-panel">
+    <div class="panel-header">
+      <span class="panel-title">Upcoming Fixtures</span>
+      <span class="panel-sub" id="fixtures-count">Loading...</span>
+    </div>
+    <div id="fixtures-list"></div>
+  </div>
+
+  <!-- COL 2: ANALYSIS -->
+  <div class="panel" id="pred-panel">
+    <div class="panel-header">
+      <span class="panel-title">Match Analysis</span>
+      <span class="panel-sub" id="pred-status">Select a fixture</span>
+    </div>
+
+    <!-- TEST PREDICT -->
+    <div class="test-predict-section">
+      <div class="test-predict-label">Quick Predict</div>
+      <div class="select-row">
+        <select class="team-select" id="testHome"><option value="">Home Team</option></select>
+        <span class="vs-divider">vs</span>
+        <select class="team-select" id="testAway"><option value="">Away Team</option></select>
+      </div>
+      <button class="predict-btn" id="predict-btn" onclick="runTestPredict()">Run Analysis</button>
+    </div>
+
+    <div id="pred-body">
+      <div class="panel-idle">
+        <div class="idle-icon">⚽</div>
+        <div class="idle-title">No fixture selected</div>
+        <div class="idle-sub">Click a fixture on the left or use Quick Predict above to load a match analysis.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COL 3: STANDINGS -->
+  <div class="panel" id="standings-panel">
+    <div class="panel-header">
+      <span class="panel-title">Premier League Table</span>
+      <span class="panel-sub" id="season-label">Loading...</span>
+    </div>
+    <div class="table-wrap"><div id="standings-list"></div></div>
+    <div class="legend">
+      <div class="legend-item"><span class="pos-dot dot-ucl"></span> Champions League</div>
+      <div class="legend-item"><span class="pos-dot dot-uel"></span> Europa League</div>
+      <div class="legend-item"><span class="pos-dot dot-rel"></span> Relegation</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ─── CONFIG ──────────────────────────────────────────────────────────────────
+const BASE = 'http://localhost:8000';  // your local backend
+
+// ─── THEME ───────────────────────────────────────────────────────────────────
+let isDark = false;
+function toggleTheme() {
+  isDark = !isDark;
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : '');
+  document.getElementById('theme-icon').textContent = isDark ? '☀️' : '🌙';
+  document.getElementById('theme-label').textContent = isDark ? 'Light' : 'Dark';
+}
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+const SHORT = {
+  'Arsenal FC':'Arsenal','Chelsea FC':'Chelsea','Manchester City FC':'Man City',
+  'Liverpool FC':'Liverpool','Tottenham Hotspur FC':'Spurs',
+  'Manchester United FC':'Man United','Newcastle United FC':'Newcastle',
+  'Aston Villa FC':'Aston Villa','West Ham United FC':'West Ham',
+  'Brighton & Hove Albion FC':'Brighton','Wolverhampton Wanderers FC':'Wolves',
+  'Everton FC':'Everton','Brentford FC':'Brentford','Fulham FC':'Fulham',
+  'Crystal Palace FC':'Crystal Palace',"Nottingham Forest FC":"Nott'm Forest",
+  'AFC Bournemouth':'Bournemouth','Luton Town FC':'Luton',
+  'Sheffield United FC':'Sheffield Utd','Burnley FC':'Burnley',
+  'Ipswich Town FC':'Ipswich','Leicester City FC':'Leicester',
+  'Southampton FC':'Southampton'
+};
+
+// Maps football-data team names → your FastAPI DB names
+const DB_MAP = {
+  'Arsenal FC':'Arsenal FC','Chelsea FC':'Chelsea FC',
+  'Manchester City FC':'Manchester City FC','Liverpool FC':'Liverpool FC',
+  'Tottenham Hotspur FC':'Tottenham Hotspur FC',
+  'Manchester United FC':'Manchester United FC',
+  'Newcastle United FC':'Newcastle United FC',
+  'Aston Villa FC':'Aston Villa FC','West Ham United FC':'West Ham United FC',
+  'Brighton & Hove Albion FC':'Brighton & Hove Albion FC',
+  'Wolverhampton Wanderers FC':'Wolverhampton Wanderers FC',
+  'Everton FC':'Everton FC','Brentford FC':'Brentford FC',
+  'Fulham FC':'Fulham FC','Crystal Palace FC':'Crystal Palace FC',
+  'Nottingham Forest FC':'Nottingham Forest FC','AFC Bournemouth':'Bournemouth FC',
+  'Luton Town FC':'Luton Town FC','Sheffield United FC':'Sheffield United FC',
+  'Burnley FC':'Burnley FC','Ipswich Town FC':'Ipswich Town FC',
+  'Leicester City FC':'Leicester City FC','Southampton FC':'Southampton FC'
+};
+
+function sn(n){ return SHORT[n] || n.replace(/ (FC|AFC)$/,''); }
+
+function fmtDate(iso){
+  const d = new Date(iso);
+  return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()]
+    + ' ' + d.getDate() + ' '
+    + ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()];
+}
+function fmtTime(iso){ return new Date(iso).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); }
+
+function skeletonRows(n){
+  let h = '';
+  for(let i=0;i<n;i++)
+    h += `<div class="loading-row">
+            <div class="skel skel-text skel-md"></div>
+            <div style="flex:1"></div>
+            <div class="skel skel-text skel-sm"></div>
+          </div>`;
+  return h;
+}
+
+//_______ BUILD DROPDOWNS_____________________________________
+function buildDropdown(matches) {
+  const homeSel = document.getElementById('testHome');
+  const awaySel = document.getElementById('testAway');
+
+  if (!homeSel || !awaySel) return;
+
+  const teams = new Set();
+
+  matches.forEach(m => {
+    if (m.homeTeam?.name) teams.add(m.homeTeam.name);
+    if (m.awayTeam?.name) teams.add(m.awayTeam.name);
+  });
+
+  const sorted = [...teams].sort();
+
+  const options = sorted.map(t =>
+    `<option value="${t}">${sn(t)}</option>`
+  ).join('');
+
+  homeSel.innerHTML = `<option value="">Home Team</option>` + options;
+  awaySel.innerHTML = `<option value="">Away Team</option>` + options;
+}
+
+// ─── POPULATE DROPDOWNS ──────────────────────────────────────────────────────
+// Called after fixtures load. Builds deduplicated sorted team lists.
+function populateDropdowns(matches) {
+  const home = document.getElementById('testHome');
+  const away = document.getElementById('testAway');
+
+  if (!home || !away) return;
+
+  const teams = new Set();
+
+  matches.forEach(m => {
+    if (m.homeTeam?.name) teams.add(m.homeTeam.name);
+    if (m.awayTeam?.name) teams.add(m.awayTeam.name);
+  });
+
+  const sorted = [...teams].sort((a, b) =>
+    sn(a).localeCompare(sn(b))
+  );
+
+  home.innerHTML = `<option value="">Home Team</option>`;
+  away.innerHTML = `<option value="">Away Team</option>`;
+
+  sorted.forEach(team => {
+    const opt1 = document.createElement("option");
+    opt1.value = team;
+    opt1.textContent = sn(team);
+    home.appendChild(opt1);
+
+    const opt2 = document.createElement("option");
+    opt2.value = team;
+    opt2.textContent = sn(team);
+    away.appendChild(opt2);
+  });
+}
+
+//________HARDCODED FIXTURES____________
+window.addEventListener("DOMContentLoaded", () => {
+  const testTeams = [
+    
+    "Arsenal FC",
+    "AFC Bournemouth",
+    "Aston Villa FC",
+    "Burnley FC",
+    "Brentford FC",
+    "Brighton & Hove Albion FC",
+    "Chelsea FC",
+    "Crystal Palace FC",
+    "Everton FC",
+    "Fulham FC",
+    "Leeds United FC",
+    "Liverpool FC",
+    "Manchester City FC",
+    "Manchester United FC",
+    "Newcastle United FC",
+    "Nottingham Forest FC",
+    "Sunderland AFC",
+    "Tottenham Hotspur FC",
+    "West Ham United FC",
+    "Wolverhampton Wanderers FC"
+  ];
+
+  const home = document.getElementById("testHome");
+  const away = document.getElementById("testAway");
+
+  home.innerHTML = `<option value="">Home Team</option>`;
+  away.innerHTML = `<option value="">Away Team</option>`;
+
+  testTeams.forEach(t => {
+    home.innerHTML += `<option value="${t}">${t}</option>`;
+    away.innerHTML += `<option value="${t}">${t}</option>`;
+  });
+
+  console.log("DROPDOWN FORCED WORKING");
+});
+
+// ─── LOAD FIXTURES ───────────────────────────────────────────────────────────
+let fixturesData = [];
+
+async function loadFixtures() {
+  const el = document.getElementById('fixtures-list');
+  el.innerHTML = skeletonRows(8);
+
+  try {
+    const r = await fetch("http://127.0.0.1:8000/fixtures");
+    const data = await r.json();
+
+    console.log("FIXTURES API RESPONSE:", data); // 🔥 DEBUG
+
+    const raw =
+      Array.isArray(data?.matches) ? data.matches :
+      Array.isArray(data?.fixtures) ? data.fixtures :
+      [];
+    fixturesData = Array.isArray(raw) ? raw.slice(0, 18) : [];
+
+    document.getElementById('fixtures-count').textContent =
+      `${fixturesData.length} upcoming`;
+
+    console.log("FIXTURES:", fixturesData);
+
+    // HARD GUARD
+    if (!Array.isArray(fixturesData)) fixturesData = [];
+    if (!fixturesData.length) {
+      el.innerHTML = `<div class="empty-state">
+        <div style="font-size:26px;margin-bottom:8px">📅</div>
+        <div class="empty-title">No upcoming fixtures</div>
+      </div>`;
+      return;
+    }
+
+    el.innerHTML = fixturesData.map((m, i) => `
+      <div class="fixture-card" data-index="${i}">
+        <div class="fixture-teams">
+          <span class="team-name">${sn(m.homeTeam.name)}</span>
+          <span class="vs-badge">vs</span>
+          <span class="team-name away">${sn(m.awayTeam.name)}</span>
+        </div>
+      </div>
+    `).join('');
+
+  } catch (e) {
+    console.error("Fixtures error:", e);
+
+    el.innerHTML = `<div class="empty-state">
+      <div class="empty-title">Fixtures failed</div>
+    </div>`;
+  }
+}
+// Click delegation for fixture cards
+document.addEventListener('click', function(e) {
+  const card = e.target.closest('.fixture-card');
+  if (!card || !fixturesData.length) return;
+  const idx = parseInt(card.dataset.index, 10);
+  if (isNaN(idx) || !fixturesData[idx]) return;
+  selectFixture(idx, fixturesData[idx]);
+});
+
+function selectFixture(idx, match) {
+  if (!match?.homeTeam?.name || !match?.awayTeam?.name) return;
+
+  document.querySelectorAll('.fixture-card')
+    .forEach(c => c.classList.remove('selected'));
+
+  const card = document.querySelector(`.fixture-card[data-index="${idx}"]`);
+  if (card) card.classList.add('selected');
+
+  triggerPrediction(match.homeTeam.name, match.awayTeam.name, match);
+}
+
+// ─── LOAD STANDINGS ───────────────────────────────────────────────────────────
+// Uses football-data.org directly — same source as fixtures, so season always matches.
+async function loadStandings() {
+  const el = document.getElementById('standings-list');
+  el.innerHTML = skeletonRows(6);
+
+  try {
+    const r = await fetch(`${BASE}/standings`)
+    const data = await r.json();
+
+    // Show the actual season from the API response
+    const seasonLabel = data.season
+      ? `${data.season.startDate?.slice(0,4)}/${data.season.endDate?.slice(2,4)}`
+      : 'Current Season';
+    document.getElementById('season-label').textContent = seasonLabel;
+
+    const table = data.standings.find(s => s.type === 'TOTAL').table;
+
+    const rows = table.map(t => {
+      let rc = '', dot = '';
+      if (t.position <= 4)       { rc = 'ucl'; dot = '<span class="pos-dot dot-ucl"></span>'; }
+      else if (t.position <= 6)  {              dot = '<span class="pos-dot dot-uel"></span>'; }
+      else if (t.position >= 18) { rc = 'rel';  dot = '<span class="pos-dot dot-rel"></span>'; }
+      const gd = t.goalDifference;
+      return `<tr class="${rc}">
+        <td class="pos num">${dot}${t.position}</td>
+        <td class="team-cell">${sn(t.team.name)}</td>
+        <td class="num">${t.playedGames}</td>
+        <td class="num" style="color:var(--text3)">${t.won}/${t.draw}/${t.lost}</td>
+        <td class="num" style="color:${gd >= 0 ? 'var(--green)' : 'var(--red)'}">${gd > 0 ? '+' : ''}${gd}</td>
+        <td class="num pts">${t.points}</td>
+      </tr>`;
+    }).join('');
+
+    el.innerHTML = `<table>
+      <thead><tr>
+        <th class="num">#</th><th>Team</th>
+        <th class="num">P</th><th class="num">W/D/L</th>
+        <th class="num">GD</th><th class="num">Pts</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+
+  } catch(e) {
+    console.error('Standings error:', e);
+    el.innerHTML = `<div class="empty-state" style="padding:24px">
+      <div class="empty-title">Standings unavailable</div>
+    </div>`;
+    document.getElementById('season-label').textContent = '';
+  }
+}
+
+// ─── QUICK PREDICT (DROPDOWN) ────────────────────────────────────────────────
+function runTestPredict() {
+  const h = document.getElementById('testHome').value;
+  const a = document.getElementById('testAway').value;
+
+  if (!h) { alert('Please select a Home team.'); return; }
+  if (!a) { alert('Please select an Away team.'); return; }
+  if (h === a) { alert('Home and Away teams must be different.'); return; }
+
+  // Build a fake match object (no real date — Quick Predict mode)
+  const fakeMatch = { utcDate: new Date().toISOString(), matchday: null };
+  triggerPrediction(h, a, fakeMatch);
+}
+
+// ─── PREDICTION ENGINE ───────────────────────────────────────────────────────
+function triggerPrediction(homeRaw, awayRaw, match) {
+  const mappedH = DB_MAP[homeRaw] || homeRaw;
+  const mappedA = DB_MAP[awayRaw] || awayRaw;
+
+  document.getElementById('pred-status').textContent = 'Fetching analysis…';
+  document.getElementById('pred-body').innerHTML = `
+    <div class="pred-match-header">
+      <div class="pred-match-teams">
+        <span class="pred-team">${sn(homeRaw)}</span>
+        <span class="pred-vs">vs</span>
+        <span class="pred-team away">${sn(awayRaw)}</span>
+      </div>
+      <div class="pred-date">${fmtDate(match.utcDate)} · ${fmtTime(match.utcDate)}${match.matchday ? ' · GW ' + match.matchday : ''}</div>
+    </div>
+    <div style="padding:30px 16px;text-align:center;color:var(--text3);font-size:13px">
+      <div style="width:26px;height:26px;border:3px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px"></div>
+      Analysing matchup…
+    </div>`;
+
+  callPredict(mappedH, mappedA, homeRaw, awayRaw, match);
+}
+
+async function callPredict(mappedH, mappedA, displayH, displayA, match) {
+  try {
+    if (!mappedH || !mappedA) {
+      console.error("Invalid teams:", mappedH, mappedA);
+      renderMock(displayH, displayA, match);
+      return;
+    }
+
+    const url = `${BASE}/predict?home_team=${encodeURIComponent(mappedH)}&away_team=${encodeURIComponent(mappedA)}`;
+
+    console.log("REQUEST URL:", url);
+
+    const r = await fetch(url, {
+      method: "POST"
+    });
+
+    if (!r.ok) {
+      const err = await r.text();
+      throw new Error(err);
+    }
+
+    const d = await r.json();
+    renderPrediction(d, displayH, displayA, match, false);
+
+    document.getElementById("pred-status").textContent = "Analysis complete";
+
+  } catch (e) {
+    console.warn("Predict failed:", e.message);
+    renderMock(displayH, displayA, match);
+  }
+}
+
+function renderMock(displayH, displayA, match) {
+  const seed = (displayH + displayA).split('').reduce((a,c) => a + c.charCodeAt(0), 0);
+  const h = 35 + (seed % 25);
+  const d = 20 + ((seed * 7) % 15);
+  const a = 100 - h - d;
+
+  const pred = h > d && h > a ? 'H' : d > a ? 'D' : 'A';
+
+  renderPrediction(
+    {
+      prediction: pred,
+      confidence: Math.max(h,d,a) / 100,
+      probabilities: { H: h/100, D: d/100, A: a/100 }
+    },
+    displayH, displayA, match, true
+  );
+}
+
+function renderPrediction(d, displayH, displayA, match, isMock) {
+  const labels = { H: 'Home Win', D: 'Draw', A: 'Away Win' };
+  const vClass = { H: 'verdict-home', D: 'verdict-draw', A: 'verdict-away' };
+  const ph = Math.round((d.probabilities?.H || 0) * 100);
+  const pd = Math.round((d.probabilities?.D || 0) * 100);
+  const pa = Math.round((d.probabilities?.A || 0) * 100);
+  const conf = Math.round((d.confidence || 0) * 100);
+
+  document.getElementById('pred-status').textContent = 'Analysis complete';
+  document.getElementById('pred-body').innerHTML = `
+    <div class="pred-match-header">
+      <div class="pred-match-teams">
+        <span class="pred-team">${sn(displayH)}</span>
+        <span class="pred-vs">vs</span>
+        <span class="pred-team away">${sn(displayA)}</span>
+      </div>
+      <div class="pred-date">${fmtDate(match.utcDate)} · ${fmtTime(match.utcDate)}</div>
+    </div>
+
+    <div class="verdict-card ${vClass[d.prediction]}">
+      <div>
+        <div class="verdict-label">Projected result</div>
+        <div class="verdict-outcome">${labels[d.prediction]}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="verdict-conf-num">${conf}%</div>
+        <div class="verdict-conf-label">confidence</div>
+      </div>
+    </div>
+
+    <div class="probs-section">
+      <div class="prob-row">
+        <div class="prob-header">
+          <span class="prob-label">${sn(displayH)}</span>
+          <span class="prob-pct">${ph}%</span>
+        </div>
+        <div class="prob-bar-bg"><div class="prob-bar-fill bar-home" style="width:${ph}%"></div></div>
+      </div>
+      <div class="prob-row">
+        <div class="prob-header">
+          <span class="prob-label">Draw</span>
+          <span class="prob-pct">${pd}%</span>
+        </div>
+        <div class="prob-bar-bg"><div class="prob-bar-fill bar-draw" style="width:${pd}%"></div></div>
+      </div>
+      <div class="prob-row">
+        <div class="prob-header">
+          <span class="prob-label">${sn(displayA)}</span>
+          <span class="prob-pct">${pa}%</span>
+        </div>
+        <div class="prob-bar-bg"><div class="prob-bar-fill bar-away" style="width:${pa}%"></div></div>
+      </div>
+    </div>
+
+    ${isMock ? `<div class="disclaimer">⚡ Preview mode — connect FastAPI at <code>http://127.0.0.1:8000/predict</code> for live results.</div>` : ''}
+  `;
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+loadFixtures();
+loadStandings();
+</script>
+</body>
+</html>
