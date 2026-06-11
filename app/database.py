@@ -18,3 +18,10 @@ def get_db():
         yield db
     finally:
         db.close()
+
+print(SQLALCHEMY_DATABASE_URL)
+
+import psycopg2
+
+conn = psycopg2.connect(SQLALCHEMY_DATABASE_URL)
+print("Connected!")

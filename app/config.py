@@ -5,5 +5,5 @@ from dotenv import load_dotenv
 load_dotenv()
 
 #Database configuration
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:Gideon@localhost/epl_matches")
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres.maqzdylqyykxyzrmurwe:iyanuOLUWA5330@aws-0-eu-west-1.pooler.supabase.com:6543/postgres")
 API_TOKEN = os.getenv("API_TOKEN","12c0151a71964fcdb24ada0e2381e5fc")

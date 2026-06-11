@@ -10,6 +10,11 @@ from app.data_ingestion import data_ingestion
 db = SessionLocal()
 data_ingestion(matches, db)
 
-print("DONE")
+#print("DONE")
 
 db.close()
+
+import psycopg2
+
+conn = psycopg2.connect("YOUR_DATABASE_URL")
+print("Connected!")
