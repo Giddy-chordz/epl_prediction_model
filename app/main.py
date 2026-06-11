@@ -2,7 +2,7 @@ from fastapi import FastAPI, status, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from database import get_db
-from . import feature_engine
+from app import feature_engine
 from config import API_TOKEN
 import requests
 import pickle
