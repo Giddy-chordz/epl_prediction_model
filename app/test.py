@@ -14,3 +14,9 @@ data_ingestion(matches, db)
 
 db.close()
 
+from database import engine, Base
+import models  # IMPORTANT: this imports all tables
+
+print("Creating tables...")
+Base.metadata.create_all(bind=engine)
+print("Done!")
