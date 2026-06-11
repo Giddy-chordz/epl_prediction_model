@@ -2,7 +2,7 @@
 #model input feature engineering
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
-from app.models import Match
+from models import Match
 
 #define a function to get the last 5 matches
 def get_home_last_matches(team: str, db: Session):

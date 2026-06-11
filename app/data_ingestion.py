@@ -1,6 +1,6 @@
 #ingest live data from football-data api
 from datetime import datetime
-from app.models import Match
+from models import Match
 
 def data_ingestion(matches, db):
 

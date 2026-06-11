@@ -230,7 +230,7 @@ tr.rel td{background:var(--rel-bg)}
 
 <script>
 // ─── CONFIG ──────────────────────────────────────────────────────────────────
-const BASE = 'http://localhost:8000';  // your local backend
+const BASE = 'https://epl-prediction-model.onrender.com';  // your local backend
 
 // ─── THEME ───────────────────────────────────────────────────────────────────
 let isDark = false;
@@ -402,7 +402,7 @@ async function loadFixtures() {
   el.innerHTML = skeletonRows(8);
 
   try {
-    const r = await fetch("http://127.0.0.1:8000/fixtures");
+    const r = await fetch("https://epl-prediction-model.onrender.com/fixtures");
     const data = await r.json();
 
     console.log("FIXTURES API RESPONSE:", data); // 🔥 DEBUG
@@ -660,7 +660,7 @@ function renderPrediction(d, displayH, displayA, match, isMock) {
       </div>
     </div>
 
-    ${isMock ? `<div class="disclaimer">⚡ Preview mode — connect FastAPI at <code>http://127.0.0.1:8000/predict</code> for live results.</div>` : ''}
+    ${isMock ? `<div class="disclaimer">⚡ Preview mode — connect FastAPI at <code>https://epl-prediction-model.onrender.com/predict</code> for live results.</div>` : ''}
   `;
 }
 

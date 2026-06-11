@@ -14,7 +14,3 @@ data_ingestion(matches, db)
 
 db.close()
 
-import psycopg2
-
-conn = psycopg2.connect("YOUR_DATABASE_URL")
-print("Connected!")

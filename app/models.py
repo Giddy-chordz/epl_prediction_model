@@ -1,6 +1,6 @@
 #======SETUP DATABASE MODELS======
 from sqlalchemy import Column, Integer, String, DateTime
-from .database import Base
+from database import Base
 
 class Match(Base):
     __tablename__ = "matches"
