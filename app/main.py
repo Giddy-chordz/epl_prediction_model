@@ -35,6 +35,12 @@ HEADERS = {
     "X-Auth-Token": API_TOKEN
 }
 
+
+@app.get("/")
+def root():
+    return {"status": "EPL API running 🚀"}
+
+
 #endpoint to get standings
 @app.get("/standings")
 def get_standings():
