@@ -24,3 +24,7 @@ try:
     data_ingestion(matches, db)
 finally:
     db.close()
+
+
+print(f"Total matches fetched: {len(matches)}")
+print(f"Sample match status: {matches[0]['status']}")
